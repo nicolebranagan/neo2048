@@ -270,8 +270,8 @@ cmds_UPDATE_TABLE:
 	dc.l	DemoUpdate, TitleUpdate
 
 DemoUpdate:
-	clr.b (Cursor_Y)		;Zero Ypos
-	clr.b (Cursor_X)		;Zero Xpos
+	move.b #$19,(Cursor_Y)
+	move.b #$10,(Cursor_X)
 
 	; Display up-to-date credit counter
 	moveq.l #0,d0	; clear d0
