@@ -34,8 +34,6 @@
 			<!-- FIX layer tiles -->
 			<dataarea name="fixed" size="0x040000">
 				<rom offset="0x000000" size="%size%" name="202-s1.s1" crc="%crc%" sha1="%sha%"  />
-				<rom offset="0x010000" size="%size%" name="Font.FIX" crc="%crc%" sha1="%sha%" />
-				<rom offset="0x012000" size="%size%" name="RawNEO.FIX" crc="%crc%" sha1="%sha%" />
 			</dataarea>
 			<!-- Z80 binary program code (sound CPU) -->
 			<dataarea name="audiocpu" size="0x020000">

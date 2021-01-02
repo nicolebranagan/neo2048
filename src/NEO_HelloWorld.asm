@@ -269,7 +269,7 @@ PrintChar:
 		add.L D4,D5
 		
 			;	PTTT - P=Palette T=TileNum
-		add.w #$1800,d0			;Tile Num (Palette 1 - Tile $800+)
+		add.w #$1020,d0			;Tile Num (Palette 1 - Tile $020+) ROM font
 		
 		move.w d5,$3C0000 		;VRAM Address
 		move.w d0,$3C0002		;VRAM Write (tile data)
