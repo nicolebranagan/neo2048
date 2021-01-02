@@ -1,6 +1,6 @@
 rm -rf ./build/*
 
-vasmm68k_mot_win32.exe ./src/NEO_HelloWorld.asm -chklabels -nocase -Fbin -m68000 -devpac -Dvasm=1 -L ./build/Listing.txt -DBuildNEO=1 -o "./build/cart.p"
+vasmm68k_mot_win32.exe ./src/NEO_HelloWorld.asm -chklabels -nocase -Fbin -m68000 -align -L ./build/Listing.txt -o "./build/cart.p"
 romwak /f ./build/cart.p
 
 mkdir ./build/rom

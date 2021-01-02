@@ -1,9 +1,8 @@
 
-
 flag_VBlank	equ  $100000   	;(byte) vblank flag in ram
 
 Cursor_X 	equ  $101000	;Cursor Position	
-Cursor_Y 	equ  $101001	;Cursor Position
+Cursor_Y 	equ  Cursor_X+1	;Cursor Position
 Message 	equ	 $101002  ;Raw point of message
 
 ; This Header is based on the work from 
@@ -94,10 +93,15 @@ Message 	equ	 $101002  ;Raw point of message
 	dc.l softDips_All  	;Software dips for Japan
 	dc.l softDips_All   ;Software dips for USA
 	dc.l softDips_All 	;Software dips for Europe
-	jmp USER 			; $122
-	jmp PLAYER_START 	; $128
-	jmp DEMO_END 		; $12E
-	jmp COIN_SOUND 		; $134
+
+	dc.w $4EF9 ; Jump to USER
+	dc.l USER
+	dc.w $4EF9 ; Jump to PLAYER_START
+	dc.l PLAYER_START
+	dc.w $4EF9 ; Jump to DEMO_END
+	dc.l DEMO_END
+	dc.w $4EF9 ; Jump to COIN_SOUND
+	dc.l COIN_SOUND
 
 	dc.l $FFFFFFFF,$FFFFFFFF,$FFFFFFFF,$FFFFFFFF
 	dc.l $FFFFFFFF,$FFFFFFFF,$FFFFFFFF,$FFFFFFFF
@@ -140,7 +144,6 @@ softDips_All:
 ; Needs to perform actions according to the value in BIOS_USER_REQUEST.
 ; Must jump back to SYSTEM_RETURN at the end so the BIOS can have control.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 USER:	
 	move.b	d0,$300001			;Kick watchdog
 	lea		$10F300,sp			;Set stack pointer to BIOS_WORKRAM
