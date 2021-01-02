@@ -228,7 +228,6 @@ userReq_Game:
 	jsr $C004C2 			;FIX_CLEAR - clear fix layer
 	jsr $C004C8				;LSP_1st   - clear first sprite
 
-
 	lea MessageRaw,a0
 	lea Message,a1
 fillMessage:
@@ -261,6 +260,7 @@ inf:
 
 	lea Message,a3
 	jsr PrintString			;Show String Message
+	jsr waitVBlank
 	jmp inf
 	
 PrintString:
@@ -311,4 +311,8 @@ nextpixel_Xok:
 	moveM.l (sp)+,d0-d7/a0-a7
 	rts
 
-	
+waitVBlank:
+	cmpi #0,flag_VBlank
+	bne waitVBlank
+	move.b #1,flag_VBlank
+	rts
