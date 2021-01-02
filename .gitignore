@@ -4,3 +4,4 @@ ui.ini
 snap/
 cfg/
 nvram/
+*.pyc
