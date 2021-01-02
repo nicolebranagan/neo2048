@@ -1,10 +1,20 @@
 
-flag_VBlank	equ  $100000   	;(byte) vblank flag in ram
+	bss
+flag_VBlank:
+	dx.b 1
+gameState:
+	dx.b 1
+Cursor_X:
+	dx.b 1
+Cursor_Y:
+	dx.b 1
+Message:
+ 	dx.b 64
 
-Cursor_X 	equ  $101000	;Cursor Position	
-Cursor_Y 	equ  Cursor_X+1	;Cursor Position
-Message 	equ	 $101002  ;Raw point of message
+STATE_DEMO equ 0
+STATE_TITLE equ 1
 
+	code
 ; This Header is based on the work from 
 ; "Neo-Geo Assembly Programming for the Absolute Beginner" by freem
 ; http://ajworld.net/neogeodev/beginner/
@@ -231,6 +241,8 @@ userReq_Game:
 	jsr $C004C2 			;FIX_CLEAR - clear fix layer
 	jsr $C004C8				;LSP_1st   - clear first sprite
 
+	clr.b (gameState)
+
 	lea MessageRaw,a0
 	lea Message,a1
 fillMessage:
@@ -243,6 +255,21 @@ fillMessage:
 
 inf:	
 	move.b	d0,$300001		;REG_DIPSW - Kick the watchdog
+
+	moveq #0,d0
+	move.b (gameState),d0
+	lsl.b #2,d0
+	lea		cmds_UPDATE_TABLE,a0
+	movea.l	(a0,d0),a0
+	jsr		(a0)
+
+	jsr waitVBlank
+	jmp inf
+
+cmds_UPDATE_TABLE:
+	dc.l	DemoUpdate, TitleUpdate
+
+DemoUpdate:
 	clr.b (Cursor_Y)		;Zero Ypos
 	clr.b (Cursor_X)		;Zero Xpos
 
@@ -263,9 +290,12 @@ inf:
 
 	lea Message,a3
 	jsr PrintString			;Show String Message
-	jsr waitVBlank
-	jmp inf
-	
+	rts
+
+TitleUpdate:
+	jsr DemoUpdate
+	rts
+
 PrintString:
 	move.b (a3)+,d0			;Read a character in from A3
 	cmp.b #255,d0
