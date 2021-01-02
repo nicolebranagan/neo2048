@@ -4,6 +4,7 @@ flag_VBlank	equ  $100000   	;(byte) vblank flag in ram
 
 Cursor_X 	equ  $101000	;Cursor Position	
 Cursor_Y 	equ  $101001	;Cursor Position
+Message 	equ	 $101002  ;Raw point of message
 
 ; This Header is based on the work from 
 ; "Neo-Geo Assembly Programming for the Absolute Beginner" by freem
@@ -211,6 +212,9 @@ IRQ3:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; 							UserReq_Game
 
+MessageRaw:    dc.b '00 CREDIT',255
+	even
+
 userReq_Game:
 	move.b	d0,$300001		;REG_DIPSW -Kick watchdog
 	
@@ -224,15 +228,40 @@ userReq_Game:
 	jsr $C004C2 			;FIX_CLEAR - clear fix layer
 	jsr $C004C8				;LSP_1st   - clear first sprite
 
-	lea Message,a3
-	jsr PrintString			;Show String Message
-		
+
+	lea MessageRaw,a0
+	lea Message,a1
+fillMessage:
+	moveq.l #0,d0	; clear d0
+	move.b (a0)+,d0
+	move.b d0,(a1)+
+
+	cmpi #$ff,d0
+	bne fillMessage
+
 inf:	
 	move.b	d0,$300001		;REG_DIPSW - Kick the watchdog
+	clr.b (Cursor_Y)		;Zero Ypos
+	clr.b (Cursor_X)		;Zero Xpos
+
+	; Display up-to-date credit counter
+	moveq.l #0,d0	; clear d0
+	move.b $D00034,d0; P1 credit count
+
+	move.l d0,d1			; tens
+	lsr.b #4,d1
+	andi.b #$000F,d1
+	ori.b #$30,d1
+	move.b d1,(Message)
+
+	move.l d0,d1			; ones
+	andi.b #$000F,d1
+	ori.b #$30,d1
+	move.b d1,(Message+1)
+
+	lea Message,a3
+	jsr PrintString			;Show String Message
 	jmp inf
-	
-Message:    dc.b 'Hello World',255
-	even
 	
 PrintString:
 	move.b (a3)+,d0			;Read a character in from A3
