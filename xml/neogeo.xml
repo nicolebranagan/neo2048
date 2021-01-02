@@ -1,0 +1,54 @@
+﻿<?xml version="1.0"?>
+<!DOCTYPE softwarelist SYSTEM "softwarelist.dtd">
+
+<!-- The list contains both MVS and AES cartridges.
+
+     For the majority of official titles the actual ROM data contained in the cartridges is compatible across systems, the actual codepath taken
+     depends upon the bios used.
+
+     The only real difference with the cartridges is the physical form of the cartridges which allowed a delayed release of the game for AES
+     systems at a higher cost.  Due to this many adapters are available which plug into an AES unit allowing you to plug any standard MVS cart
+     into the system.  Reverse adapters exist, although were less common because there was no reason to use them.  All MVS carts can be used
+     with AES systems so there is no reason to have separate lists especially when in the majority of cases the data is identical.
+
+     The primary MVS / AES releases are marked in the list for documentation purposes, typically the first AES release is just a later revision
+     of the game code with additional bugfixes etc. when compared to the primary MVS release.
+
+     Todo: games which are actually incompatible between systems (the first release of kof2001, and many of the bootlegs / hacks) should be
+           tagged with compatibility tags.
+
+-->
+
+<softwarelist name="neogeo" description="SNK Neo-Geo cartridges">
+	<software name="TestGame">
+		<description>www.chibiakumas.com Test Game</description>
+		<year>2019</year>
+		<publisher>chibiakumas.com</publisher>
+		<sharedfeat name="release" value="MVS,AES" />
+		<sharedfeat name="compatibility" value="MVS,AES" />
+		<part name="cart" interface="neo_cart">
+			<!-- 68000 binary Program Code -->
+			<dataarea name="maincpu" width="16" endianness="big" size="0x100000">
+				<rom loadflag="load16_word_swap" name="202-p1.p1" offset="0x000000" size="%size%" crc="%crc%" sha1="%sha%" />
+			</dataarea>
+			<!-- FIX layer tiles -->
+			<dataarea name="fixed" size="0x040000">
+				<rom offset="0x000000" size="%size%" name="202-s1.s1" crc="%crc%" sha1="%sha%"  />
+				<rom offset="0x010000" size="%size%" name="Font.FIX" crc="%crc%" sha1="%sha%" />
+				<rom offset="0x012000" size="%size%" name="RawNEO.FIX" crc="%crc%" sha1="%sha%" />
+			</dataarea>
+			<!-- Z80 binary program code (sound CPU) -->
+			<dataarea name="audiocpu" size="0x020000">
+				<rom offset="0x000000" size="%size%" name="202-m1.m1" crc="%crc%" sha1="%sha%" />  
+			</dataarea>
+			<!-- Sprite Pattern Data -->
+			<dataarea name="sprites" size="0x400000">
+				<rom loadflag="load16_byte" name="202-c1.c1" offset="0x000000" size="%size%" crc="%crc%" sha1="%sha%" />
+				<rom loadflag="load16_byte" name="202-c2.c2" offset="0x000001" size="%size%" crc="%crc%" sha1="%sha%" />
+				<rom loadflag="load16_byte" name="Sprites.c1" offset="0x100000" size="%size%" crc="%crc%" sha1="%sha%" />
+				<rom loadflag="load16_byte" name="Sprites.c2" offset="0x100001" size="%size%" crc="%crc%" sha1="%sha%" />
+			</dataarea>
+		</part>
+	</software>
+</softwarelist>
+

@@ -1,0 +1,1 @@
+mame64.exe -rompath ./build/rom -hashpath ./build/rom neogeo TestGame
