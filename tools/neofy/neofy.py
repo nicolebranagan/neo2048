@@ -8,14 +8,19 @@ import json
 
 def palettize(inputgrid):
     def to_binary(input):
-        return bin(input)[2:].zfill(3) # strip 0b and make 3 digits
+        return bin(input)[2:].zfill(6) # strip 0b and make 6 digits
     output = []
     for color in inputgrid.palette:
-        red = to_binary(color[0] // 32)
-        green = to_binary(color[1] // 32)
-        blue = to_binary(color[2] // 32)
-        output.append(int(f'{green[1:]}{red}{blue}', 2))
-        output.append(int(f'0000000{green[0]}', 2))
+        red = to_binary(color[0] // 4)
+        green = to_binary(color[1] // 4)
+        blue = to_binary(color[2] // 4)
+
+        if (int(red[5]) + int(green[5]) + int(blue[5])) == 2:
+            dark_bit = 1
+        else:
+            dark_bit = 0
+        output.append(int(f'{dark_bit}{red[4]}{green[4]}{blue[4]}{red[:4]}', 2))
+        output.append(int(f'{green[:4]}{blue[:4]}', 2))
     return output
 
 def index_to_binary(input):
