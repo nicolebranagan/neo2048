@@ -10,6 +10,11 @@ Cursor_Y:
 	dx.b 1
 Message:
  	dx.b 64
+SpriteNum:
+	dx.b 1
+	even
+Grid:
+	dx.b 32
 
 STATE_DEMO equ 0
 STATE_TITLE equ 1
@@ -243,7 +248,7 @@ userReq_Active:
 	move.b	d0,$300001		;REG_DIPSW -Kick watchdog
 	
 	;        -RGB			;Color Num:
-	move.w #$0FDA,$401FFE	;0 - Background color
+	move.w #$0ADF,$401FFE	;0 - Background color
 	move.w #$0F0F,$400022	;1
 
 inf:	
@@ -386,31 +391,35 @@ SpritePalette:
 	even
 
 drawSprite:
-	move.l #$400200,a0
-	move.l #SpritePalette,a1
-	move.l (a1)+,d0
-	move.l d0,(a0)+
-	move.l (a1)+,d0
-	move.l d0,(a0)+
-	move.l (a1)+,d0
-	move.l d0,(a0)+
-	move.l (a1)+,d0
-	move.l d0,(a0)+
-	move.l (a1)+,d0
-	move.l d0,(a0)+
-	move.l (a1)+,d0
-	move.l d0,(a0)+
-	move.l (a1)+,d0
-	move.l d0,(a0)+
-	move.l (a1)+,d0
-	move.l d0,(a0)+
-
-	move.l #0,d0		;Hard Sprite Number (10)
-	move.l #$50,d1		;Xpos
-	move.l #388,d2		;Ypos
-	move.l #$2000,d3	;Pattern Num
+	clr d5
+	movea.l #(Grid),a0
+	
+	moveq #10,d0 ;Hard Sprite Number (10)
+	move.l #$30,d1		;Xpos
+	move.l #400,d2		;Ypos
 	move.l #$10,d4		;Palette
+
+.drawTile:
+	add.l #32,d1
+
+	move.b (a0)+,d5
+	beq .skipDraw
+
+	move.l #$2000,d3	;Pattern Num
 	jsr SetSprite
+
+	addq.l #1,d0
+	add.l #16,d1
+	addq.l #2,d3
+	jsr SetSprite
+
+	addq.l #1,d0
+	sub.l #16,d1
+
+.skipDraw:
+	cmpa.l #(Grid+16),a0
+	bne .drawTile
+
 	rts
 
 SetSprite:
@@ -471,9 +480,42 @@ GameInit:
 	move.b #2,d0
 	move.b d0,$10FDAF ; BIOS_USER_MODE
 
+	; Put sprite palette real
+	move.l #$400200,a0
+	move.l #SpritePalette,a1
+	move.l (a1)+,d0
+	move.l d0,(a0)+
+	move.l (a1)+,d0
+	move.l d0,(a0)+
+	move.l (a1)+,d0
+	move.l d0,(a0)+
+	move.l (a1)+,d0
+	move.l d0,(a0)+
+	move.l (a1)+,d0
+	move.l d0,(a0)+
+	move.l (a1)+,d0
+	move.l d0,(a0)+
+	move.l (a1)+,d0
+	move.l d0,(a0)+
+	move.l (a1)+,d0
+	move.l d0,(a0)+
+
+	clr.l d0
+	move.l d0,Grid
+	move.l d0,Grid+4
+	move.l d0,Grid+4
+	move.l d0,Grid+4
+	jsr InitRound
+
 	rts
 
 GameUpdate:
 	jsr drawSprite
 	jsr DrawCredit
+	rts
+
+InitRound:
+	moveq #1,d0
+	move.b d0,Grid
+	move.b d0,(Grid+2)
 	rts
