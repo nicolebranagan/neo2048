@@ -680,4 +680,90 @@ StepGrid:
 	move.l (a0)+,(a1)+
 	move.l (a0)+,(a1)+
 
+	jsr CanStepGrid
+	cmpi #0,d2
+	bne StepGrid
+
+	rts
+
+; d0 delta-x
+; d1 delta-y
+; returns 0 in d2 if can't step grid
+; returns 1 in d2 if can step grid further
+CanStepGrid:
+	clr.l d2
+	clr.l d3
+
+.xloop
+	; load tile at d2, d3 on grid
+	move d3,d4
+	lsl #2,d4
+	add d2,d4
+	movea.l #(Grid),a0
+	adda.l d4,a0
+
+	; put current value in d4
+	move.b (a0),d4
+	beq .nextX
+
+	; do work on x
+	; d5, d6 working x-y
+	move d2,d5
+	move d3,d6
+
+	add.b d0,d5
+	add.b d1,d6
+
+	; bounds check
+	cmpi.b #-1,d5
+	beq .dontMove
+
+	cmpi.b #4,d5
+	beq .dontMove
+
+	cmpi.b #-1,d6
+	beq .dontMove
+
+	cmpi.b #4,d6
+	beq .dontMove
+
+	; Get spot on new grid, put in d5
+	move d6,d7
+	lsl #2,d7
+	add d5,d7
+	movea.l #(Grid),a0
+	adda.l d7,a0
+	move.b (a0),d5
+	beq .freeMove
+
+	cmp.b d4,d5
+	bne .dontMove
+
+	; Can combine pieces
+	move.l #2,d2
+	rts
+
+	bra .nextX
+
+.freeMove
+	move.l #2,d2
+	rts
+
+.dontMove
+	bra .nextX
+
+.nextX
+	addq.l #1,d2
+	cmpi.l #4,d2
+	bne .xloop
+
+	; reset, increment y
+	clr.l d2
+	addq.l #1,d3
+	cmpi.l #4,d3
+	bne .xloop
+
+	move.l #0,d2
+	rts
+
 	rts
