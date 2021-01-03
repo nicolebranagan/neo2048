@@ -13,6 +13,7 @@ Message:
 
 STATE_DEMO equ 0
 STATE_TITLE equ 1
+STATE_GAME equ 2
 
 	code
 ; This Header is based on the work from 
@@ -192,6 +193,7 @@ userReq_StartupInit:
 	
 PLAYER_START:					;Player pressed start on title
 	move.b	d0,$300001;REG_DIPSW		; kick the watchdog
+	jsr GameInit
 	rts
 	
 COIN_SOUND:					
@@ -243,10 +245,6 @@ userReq_Active:
 	;        -RGB			;Color Num:
 	move.w #$0FDA,$401FFE	;0 - Background color
 	move.w #$0F0F,$400022	;1
-	
-	jsr $C004C2 			;FIX_CLEAR - clear fix layer
-	jsr $C004C8				;LSP_1st   - clear first sprite
-	jsr drawSprite
 
 inf:	
 	move.b	d0,$300001		;REG_DIPSW - Kick the watchdog
@@ -262,9 +260,10 @@ inf:
 	jmp inf
 
 cmds_UPDATE_TABLE:
-	dc.l	DemoUpdate, TitleUpdate
+	dc.l	DemoUpdate, TitleUpdate, GameUpdate
 
 DemoUpdate:
+DrawCredit:
 	lea MessageRaw,a0
 	lea Message,a1
 .fillMessage:
@@ -427,7 +426,7 @@ SetSprite:
 	move.w d7,$3C0000 		
 	
 	rol.l #7,d2				;Shift Ypos into correct position
-	or.l #$0001,d2			;Just 1 sprite
+	or.l #$0002,d2			;Just 1 sprite
 	
 	move.w d2,$3C0002		;YYYYYYYY YCSSSSSS Ypos
 									;Chain Sprite Size (1 sprite)
@@ -449,6 +448,32 @@ SetSprite:
 	
 	rol.l #8,d4				;Palette into top byte
 	move.w d4,$3C0002		;PPPPPPPP NNNNAAVH Palette Tile, 
+
+	addq.l #1,d7
+	move.w d7,$3C0000 		;TileNum.1 at $0000+Sprnum*64
+	
+	addq.l #1,d3
+	move.w d3,$3C0002		;NNNNNNNN NNNNNNNN Tile
+							;(tiles start at $2000 - set by MAME XML)									
+	addq.l #1,d7
+	move.w d7,$3C0000 		;TilePal.1 at $0001+Sprnum*64
+	move.w d4,$3C0002		;PPPPPPPP NNNNAAVH Palette Tile, 
 								;Autoanimate Flip
 	moveM.l (sp)+,d0-d7
+	rts
+
+GameInit:
+	jsr $C004C2 			;FIX_CLEAR - clear fix layer
+	jsr $C004C8				;LSP_1st   - clear first sprite
+
+	move.b #(STATE_GAME),d0
+	move.b d0,gameState
+	move.b #2,d0
+	move.b d0,$10FDAF ; BIOS_USER_MODE
+
+	rts
+
+GameUpdate:
+	jsr drawSprite
+	jsr DrawCredit
 	rts
