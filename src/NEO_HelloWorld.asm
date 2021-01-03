@@ -528,7 +528,7 @@ GameUpdate:
 InitRound:
 	moveq #1,d0
 	move.b d0,Grid
-	moveq #2,d0
+	moveq #1,d0
 	move.b d0,(Grid+2)
 	rts
 
@@ -609,6 +609,7 @@ StepGrid:
 	add.b d0,d5
 	add.b d1,d6
 
+	; bounds check
 	cmpi.b #-1,d5
 	beq .dontMove
 
@@ -621,14 +622,32 @@ StepGrid:
 	cmpi.b #4,d6
 	beq .dontMove
 
+	; Get spot on new grid, put in d5
 	move d6,d7
 	lsl #2,d7
 	add d5,d7
 	movea.l #(Grid),a0
 	adda.l d7,a0
 	move.b (a0),d5
+	beq .freeMove
+
+	cmp.b d4,d5
 	bne .dontMove
 
+	; Combine pieces
+	movea.l #(NewGrid),a0
+	adda.l d7,a0
+	addq.l #1,d4
+	move.b d4,(a0)
+
+	; Remove partner from grid so to avoid overlap
+	movea.l #(Grid),a0
+	adda.l d7,a0
+	move.b #0,(a0)
+
+	bra .nextX
+
+.freeMove
 	movea.l #(NewGrid),a0
 	adda.l d7,a0
 	move.b d4,(a0)
