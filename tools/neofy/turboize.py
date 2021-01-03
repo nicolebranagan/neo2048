@@ -89,17 +89,17 @@ def turboize_16x16(inputgrid):
             output.extend(turboize_tile(inputgrid, true_x + 8, true_y + 8))
     return output
 
-def turboize_sprite_16x16(inputgrid, x_start, y_start):
+def neofy_sprite_8x8(inputgrid, x_start, y_start):
     bitplane1 = []
     bitplane2 = []
     bitplane3 = []
     bitplane4 = []
-    for y in range(0, 16):
+    for y in range(0, 8):
         rowplane1 = []
         rowplane2 = []
         rowplane3 = []
         rowplane4 = []
-        for x in range(0, 16):
+        for x in range(7, -1, -1):
             true_x = x + x_start
             true_y = y + y_start
             val = index_to_binary(inputgrid.get(true_x, true_y))
@@ -107,60 +107,56 @@ def turboize_sprite_16x16(inputgrid, x_start, y_start):
             rowplane2.append(val[2])
             rowplane3.append(val[1])
             rowplane4.append(val[0])
-        bitplane1.append(int(''.join(rowplane1[8:]), 2))
         bitplane1.append(int(''.join(rowplane1[:8]), 2))
-
-        bitplane2.append(int(''.join(rowplane2[8:]), 2))
         bitplane2.append(int(''.join(rowplane2[:8]), 2))
-
-        bitplane3.append(int(''.join(rowplane3[8:]), 2))
         bitplane3.append(int(''.join(rowplane3[:8]), 2))
-
-        bitplane4.append(int(''.join(rowplane4[8:]), 2))
         bitplane4.append(int(''.join(rowplane4[:8]), 2))
-    return bitplane1 + bitplane2 + bitplane3 + bitplane4
+    return (bitplane1, bitplane2, bitplane3, bitplane4)
 
-def turboize_sprite(inputgrid):
+def interleave_bitplanes(bitplane1, bitplane2):
     output = []
+    for i in range(0, len(bitplane1)):
+        output.append(bitplane1[i])
+        output.append(bitplane2[i])
+    return output
+
+def neofy_sprite_16x16(inputgrid, x_start, y_start):
+    top_left = neofy_sprite_8x8(inputgrid, x_start, y_start)
+    top_right = neofy_sprite_8x8(inputgrid, x_start + 8, y_start)
+    bottom_left = neofy_sprite_8x8(inputgrid, x_start, y_start + 8)
+    bottom_right = neofy_sprite_8x8(inputgrid, x_start + 8, y_start + 8)
+
+    c0 = []
+    c1 = []
+
+    c0.extend(interleave_bitplanes(top_right[0], top_right[1]))
+    c1.extend(interleave_bitplanes(top_right[2], top_right[3]))
+
+    c0.extend(interleave_bitplanes(bottom_right[0], bottom_right[1]))
+    c1.extend(interleave_bitplanes(bottom_right[2], bottom_right[3]))
+
+    c0.extend(interleave_bitplanes(top_left[0], top_left[1]))
+    c1.extend(interleave_bitplanes(top_left[2], top_left[3]))
+
+    c0.extend(interleave_bitplanes(bottom_left[0], bottom_left[1]))
+    c1.extend(interleave_bitplanes(bottom_left[2], bottom_left[3]))
+
+    return (c0, c1)
+
+def neofy_sprite(inputgrid):
+    output0 = []
+    output1 = []
     max_ = inputgrid.getmaxytuple()
     cols = math.ceil((1+max_[0])/2)
     for xgroup in range(0, cols):
         for ygroup in range(0, inputgrid.height // 2):
-            output.extend(
-                turboize_sprite_16x16(inputgrid, xgroup * 16, ygroup*16)
-            )
-    return output
-
-def turboize_face(inputgrid):
-    output = []
-    max_ = inputgrid.getmaxtuple()
-    cols = math.ceil((1+max_[1])/6)
-    for ygroup in range(0, cols):
-        for xgroup in range(0, inputgrid.width // 4):
-            basex = xgroup * 32
-            basey = ygroup * 48
-            output.extend(
-                turboize_sprite_16x16(inputgrid, basex, basey)
-            )
-            output.extend(
-                turboize_sprite_16x16(inputgrid, basex + 16, basey)
-            )
-            output.extend(
-                turboize_sprite_16x16(inputgrid, basex, basey + 16)
-            )
-            output.extend(
-                turboize_sprite_16x16(inputgrid, basex + 16, basey + 16)
-            )
-            output.extend(
-                turboize_sprite_16x16(inputgrid, basex, basey + 32)
-            )
-            output.extend(
-                turboize_sprite_16x16(inputgrid, basex + 16, basey + 32)
-            )
-    return output
+            c0, c1 = neofy_sprite_16x16(inputgrid, xgroup * 16, ygroup*16)
+            output0.extend(c0)
+            output1.extend(c1)
+    return (output0, output1)
 
 if (len(sys.argv) < 5):
-    print("usage: turboize.py [sprite|tile|8x8font|8x16font|face] <input> <output> <palette>")
+    print("usage: neofy.py [sprite|tile|8x8font|8x16font|face] <input> <output> <palette>")
     sys.exit()
 
 mode = sys.argv[1]
@@ -174,21 +170,20 @@ with open(inputfile, "r") as fileo:
     pixelgrid.load(json.load(fileo))
 
 if mode == "sprite":
-    bytelist = turboize_sprite(pixelgrid)
+    bytelist1, bytelist2 = neofy_sprite(pixelgrid)
+    with open(f"{outputfile}.s1", "wb") as fileo:
+        fileo.write(bytes(bytelist1))
+    with open(f"{outputfile}.s2", "wb") as fileo:
+        fileo.write(bytes(bytelist2))
 elif mode == "tile":
     bytelist = turboize_16x16(pixelgrid)
 elif mode == "8x8font":
     bytelist = turboize_8x8(pixelgrid)
 elif mode == "8x16font":
     bytelist = turboize_8x16(pixelgrid)
-elif mode == "face":
-    bytelist = turboize_face(pixelgrid)
 else:
     print("Unsupported type")
     sys.exit(2)
-
-with open(outputfile, "wb") as fileo:
-    fileo.write(bytes(bytelist))
 
 palette = palettize(pixelgrid)
 if mode == "sprite" or mode == "face":
