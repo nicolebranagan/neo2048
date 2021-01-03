@@ -15,6 +15,9 @@ SpriteNum:
 	align 4
 Grid:
 	dx.b 32
+	align 4
+NewGrid:
+	dx.b 32
 
 STATE_DEMO equ 0
 STATE_TITLE equ 1
@@ -510,8 +513,8 @@ GameInit:
 	clr.l d0
 	move.l d0,Grid
 	move.l d0,Grid+4
-	move.l d0,Grid+4
-	move.l d0,Grid+4
+	move.l d0,Grid+8
+	move.l d0,Grid+12
 	jsr InitRound
 
 	rts
@@ -537,6 +540,45 @@ HandleInput:
 	rts
 
 MoveDown:
-	moveq #1,d0
-	move.b d0,(Grid+1)
+	clr d0
+	moveq.l #1,d1
+	jmp StepGrid
+
+; d0 delta-x
+; d1 delta-y
+; d2 current x
+; d3 current y
+StepGrid:
+	clr.l d2
+	clr.l d3
+
+	; clear the working grid
+	move.l d2,NewGrid
+	move.l d2,NewGrid+4
+	move.l d2,NewGrid+8
+	move.l d2,NewGrid+12
+
+.xloop
+	; load tile at d2, d3 on grid
+	move d3,d4
+	lsl #2,d4
+	add d2,d4
+	movea.l #(Grid),a0
+	adda.l d4,a0
+	move.b (a0),d4
+	beq .nextX
+
+	; do work on x
+
+.nextX
+	addq.l #1,d2
+	cmpi.l #4,d2
+	bne .xloop
+
+	; reset, increment y
+	clr.l d2
+	addq.l #1,d3
+	cmpi.l #4,d3
+	bne .xloop
+
 	rts
