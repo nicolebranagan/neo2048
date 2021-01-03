@@ -609,16 +609,16 @@ StepGrid:
 	add.b d0,d5
 	add.b d1,d6
 
-	cmpi #-1,d5
+	cmpi.b #-1,d5
 	beq .dontMove
 
-	cmpi #4,d5
+	cmpi.b #4,d5
 	beq .dontMove
 
-	cmpi #-1,d6
+	cmpi.b #-1,d6
 	beq .dontMove
 
-	cmpi #4,d6
+	cmpi.b #4,d6
 	beq .dontMove
 
 	move d6,d7
