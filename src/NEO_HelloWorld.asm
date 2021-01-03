@@ -519,6 +519,7 @@ GameInit:
 GameUpdate:
 	jsr drawSprite
 	jsr DrawCredit
+	jsr HandleInput
 	rts
 
 InitRound:
@@ -526,4 +527,16 @@ InitRound:
 	move.b d0,Grid
 	moveq #2,d0
 	move.b d0,(Grid+2)
+	rts
+
+HandleInput:
+	clr.l d0
+	move.b $10FD97,d0 ;BIOS_P1CHANGE 
+	andi.b #%00000010,d0
+	bne MoveDown
+	rts
+
+MoveDown:
+	moveq #1,d0
+	move.b d0,(Grid+1)
 	rts
