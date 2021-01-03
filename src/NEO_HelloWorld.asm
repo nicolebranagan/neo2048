@@ -12,7 +12,7 @@ Message:
  	dx.b 64
 SpriteNum:
 	dx.b 1
-	even
+	align 4
 Grid:
 	dx.b 32
 
@@ -395,28 +395,35 @@ drawSprite:
 	movea.l #(Grid),a0
 	
 	moveq #10,d0 ;Hard Sprite Number (10)
-	move.l #$30,d1		;Xpos
-	move.l #400,d2		;Ypos
+	move.l #500,d2		;Ypos
 	move.l #$10,d4		;Palette
 
 .drawTile:
-	add.l #32,d1
+	move.l a0,d6
+	and.l #3,d6
+	bne .dontResetY
 
+	move.l #$60,d1		;Xpos
+	sub.l #$20,d2		;Ypos
+
+.dontResetY:
 	move.b (a0)+,d5
-	beq .skipDraw
 
+	
 	move.l #$2000,d3	;Pattern Num
+	move.l d5,d6
+	lsl #2,d6					; multiply tile by 4
+	add.l d6,d3				; add to 2000
+
 	jsr SetSprite
 
-	addq.l #1,d0
+	addq.l #1,d0			; second row, which should be sticky but eh
 	add.l #16,d1
 	addq.l #2,d3
 	jsr SetSprite
-
 	addq.l #1,d0
-	sub.l #16,d1
+	add.l #16,d1
 
-.skipDraw:
 	cmpa.l #(Grid+16),a0
 	bne .drawTile
 
@@ -517,5 +524,6 @@ GameUpdate:
 InitRound:
 	moveq #1,d0
 	move.b d0,Grid
+	moveq #2,d0
 	move.b d0,(Grid+2)
 	rts
