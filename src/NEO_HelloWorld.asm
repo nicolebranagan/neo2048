@@ -534,14 +534,45 @@ InitRound:
 
 HandleInput:
 	clr.l d0
+	clr.l d1
 	move.b $10FD97,d0 ;BIOS_P1CHANGE 
-	andi.b #%00000010,d0
+
+	move.b d0,d1
+	andi.b #%00000010,d1
 	bne MoveDown
+
+	move.b d0,d1
+	andi.b #%00000001,d1
+	bne MoveUp
+
+	move.b d0,d1
+	andi.b #%00001000,d1
+	bne MoveRight
+
+	move.b d0,d1
+	andi.b #%00000100,d1
+	bne MoveLeft
+
 	rts
 
 MoveDown:
 	clr d0
 	moveq.l #1,d1
+	jmp StepGrid
+
+MoveUp:
+	clr d0
+	move.l #-1,d1
+	jmp StepGrid
+
+MoveRight:
+	clr d1
+	moveq.l #1,d0
+	jmp StepGrid
+
+MoveLeft:
+	clr d1
+	move.l #-1,d0
 	jmp StepGrid
 
 ; d0 delta-x
@@ -590,6 +621,19 @@ StepGrid:
 	cmpi #4,d6
 	beq .dontMove
 
+	move d6,d7
+	lsl #2,d7
+	add d5,d7
+	movea.l #(Grid),a0
+	adda.l d7,a0
+	move.b (a0),d5
+	bne .dontMove
+
+	movea.l #(NewGrid),a0
+	adda.l d7,a0
+	move.b d4,(a0)
+	bra .nextX
+
 .dontMove
 	move d3,d7
 	lsl #2,d7
@@ -609,5 +653,12 @@ StepGrid:
 	addq.l #1,d3
 	cmpi.l #4,d3
 	bne .xloop
+
+	movea.l #(NewGrid),a0
+	movea.l #(Grid),a1
+	move.l (a0)+,(a1)+
+	move.l (a0)+,(a1)+
+	move.l (a0)+,(a1)+
+	move.l (a0)+,(a1)+
 
 	rts
