@@ -565,10 +565,39 @@ StepGrid:
 	add d2,d4
 	movea.l #(Grid),a0
 	adda.l d4,a0
+
+	; put current value in d4
 	move.b (a0),d4
 	beq .nextX
 
 	; do work on x
+	; d5, d6 working x-y
+	move d2,d5
+	move d3,d6
+
+	add.b d0,d5
+	add.b d1,d6
+
+	cmpi #-1,d5
+	beq .dontMove
+
+	cmpi #4,d5
+	beq .dontMove
+
+	cmpi #-1,d6
+	beq .dontMove
+
+	cmpi #4,d6
+	beq .dontMove
+
+.dontMove
+	move d3,d7
+	lsl #2,d7
+	add d2,d7
+	movea.l #(NewGrid),a0
+	adda.l d7,a0
+	move.b d4,(a0)
+	bra .nextX
 
 .nextX
 	addq.l #1,d2
