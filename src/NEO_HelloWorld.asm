@@ -178,7 +178,7 @@ cmds_USER_REQUEST:
 	dc.l	userReq_StartupInit	; Command 0 (Initialize)
 	dc.l	userReq_StartupInit	; Command 1 (Custom eyecatch)
 	dc.l	userReq_Game		; Command 2 (Demo Game/Game)
-	dc.l	userReq_Game		; Command 3 (Title Display)
+	dc.l	userReq_TitleDisplay		; Command 3 (Title Display)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; 							userReq_StartupInit
@@ -227,8 +227,17 @@ IRQ3:
 
 MessageRaw:    dc.b '00 CREDIT',255
 	even
+TitleRaw:			 dc.b 'NEO 2048',255
+	even
+
+userReq_TitleDisplay:
+	move.b #(STATE_TITLE),d0
+	move.b d0,gameState
+
+	jmp userReq_Active
 
 userReq_Game:
+userReq_Active:
 	move.b	d0,$300001		;REG_DIPSW -Kick watchdog
 	
 	;        -RGB			;Color Num:
@@ -240,18 +249,6 @@ userReq_Game:
 	
 	jsr $C004C2 			;FIX_CLEAR - clear fix layer
 	jsr $C004C8				;LSP_1st   - clear first sprite
-
-	clr.b (gameState)
-
-	lea MessageRaw,a0
-	lea Message,a1
-fillMessage:
-	moveq.l #0,d0	; clear d0
-	move.b (a0)+,d0
-	move.b d0,(a1)+
-
-	cmpi #$ff,d0
-	bne fillMessage
 
 inf:	
 	move.b	d0,$300001		;REG_DIPSW - Kick the watchdog
@@ -270,6 +267,16 @@ cmds_UPDATE_TABLE:
 	dc.l	DemoUpdate, TitleUpdate
 
 DemoUpdate:
+	lea MessageRaw,a0
+	lea Message,a1
+.fillMessage:
+	moveq.l #0,d0	; clear d0
+	move.b (a0)+,d0
+	move.b d0,(a1)+
+
+	cmpi #$ff,d0
+	bne .fillMessage
+
 	move.b #$19,(Cursor_Y)
 	move.b #$10,(Cursor_X)
 
@@ -293,8 +300,35 @@ DemoUpdate:
 	rts
 
 TitleUpdate:
-	jsr DemoUpdate
-	rts
+	move.b #$08,(Cursor_Y)
+	move.b #$10,(Cursor_X)
+
+	lea TitleRaw,a3
+	jsr PrintString			;Show String Message
+
+; Display up-to-date timeout
+	move.b #$0C,(Cursor_Y)
+	move.b #$10,(Cursor_X)
+
+	moveq.l #0,d0	; clear d0
+	move.b $10FDDA,d0; compulsion start timer
+
+	move.l d0,d1			; tens
+	lsr.b #4,d1
+	andi.b #$000F,d1
+	ori.b #$30,d1
+	move.b d1,(Message)
+
+	move.l d0,d1			; ones
+	andi.b #$000F,d1
+	ori.b #$30,d1
+	move.b d1,(Message+1)
+	move.b #$FF,(Message+2)
+
+	lea Message,a3
+	jsr PrintString			;Show String Message
+
+	jmp DemoUpdate
 
 PrintString:
 	move.b (a3)+,d0			;Read a character in from A3
@@ -345,7 +379,7 @@ nextpixel_Xok:
 	rts
 
 waitVBlank:
-	cmpi #0,flag_VBlank
+	cmpi.b #0,flag_VBlank
 	bne waitVBlank
 	move.b #1,flag_VBlank
 	rts
