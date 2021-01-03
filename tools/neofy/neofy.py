@@ -176,9 +176,9 @@ with open(inputfile, "r") as fileo:
 
 if mode == "sprite":
     bytelist1, bytelist2 = neofy_sprite(pixelgrid)
-    with open(f"{outputfile}.s1", "wb") as fileo:
+    with open(f"{outputfile}.c1", "wb") as fileo:
         fileo.write(bytes(bytelist1))
-    with open(f"{outputfile}.s2", "wb") as fileo:
+    with open(f"{outputfile}.c2", "wb") as fileo:
         fileo.write(bytes(bytelist2))
 elif mode == "tile":
     bytelist = turboize_16x16(pixelgrid)

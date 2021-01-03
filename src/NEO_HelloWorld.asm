@@ -241,14 +241,12 @@ userReq_Active:
 	move.b	d0,$300001		;REG_DIPSW -Kick watchdog
 	
 	;        -RGB			;Color Num:
-	move.w #$0007,$401FFE	;0 - Background color
-	move.w #$0FF0,$400022	;1
-	move.w #$00FF,$400024	;2
-	move.w #$0F00,$400026	;3
-	move.w #$0FF0,$40003E	;15 - Font
+	move.w #$0FDA,$401FFE	;0 - Background color
+	move.w #$0F0F,$400022	;1
 	
 	jsr $C004C2 			;FIX_CLEAR - clear fix layer
 	jsr $C004C8				;LSP_1st   - clear first sprite
+	jsr drawSprite
 
 inf:	
 	move.b	d0,$300001		;REG_DIPSW - Kick the watchdog
@@ -382,4 +380,75 @@ waitVBlank:
 	cmpi.b #0,flag_VBlank
 	bne waitVBlank
 	move.b #1,flag_VBlank
+	rts
+
+SpritePalette:
+	incbin ./palettes/tiles.pal
+	even
+
+drawSprite:
+	move.l #$400200,a0
+	move.l #SpritePalette,a1
+	move.l (a1)+,d0
+	move.l d0,(a0)+
+	move.l (a1)+,d0
+	move.l d0,(a0)+
+	move.l (a1)+,d0
+	move.l d0,(a0)+
+	move.l (a1)+,d0
+	move.l d0,(a0)+
+	move.l (a1)+,d0
+	move.l d0,(a0)+
+	move.l (a1)+,d0
+	move.l d0,(a0)+
+	move.l (a1)+,d0
+	move.l d0,(a0)+
+	move.l (a1)+,d0
+	move.l d0,(a0)+
+
+	move.l #0,d0		;Hard Sprite Number (10)
+	move.l #$50,d1		;Xpos
+	move.l #388,d2		;Ypos
+	move.l #$2000,d3	;Pattern Num
+	move.l #$10,d4		;Palette
+	jsr SetSprite
+	rts
+
+SetSprite:
+	moveM.l d0-d7,-(sp)	
+		
+	move.l d0,d7
+	add.l #$8000,d7			;Sprite Settings start at $8000+Sprnum
+	
+	move.w d7,$3C0000 		
+	move.w #$0FFF,$3C0002	;----HHHH VVVVVVVV - Shrink
+	
+	add.l #$200,d7			;Ypos at $8200+Sprnum
+	move.w d7,$3C0000 		
+	
+	rol.l #7,d2				;Shift Ypos into correct position
+	or.l #$0001,d2			;Just 1 sprite
+	
+	move.w d2,$3C0002		;YYYYYYYY YCSSSSSS Ypos
+									;Chain Sprite Size (1 sprite)
+	
+	add.l #$200,d7			;Xpos at $8400+Sprnum
+	move.w d7,$3C0000 		
+	
+	rol.l #7,d1
+	move.w d1,$3C0002		;XXXXXXXX X------- Xpos
+
+	move.l d0,d7
+	rol.l #6,d7				;SpriteNum*64
+	move.w d7,$3C0000 		;TileNum.1 at $0000+Sprnum*64
+	
+	move.w d3,$3C0002		;NNNNNNNN NNNNNNNN Tile
+							;(tiles start at $2000 - set by MAME XML)									
+	addq.l #1,d7
+	move.w d7,$3C0000 		;TilePal.1 at $0001+Sprnum*64
+	
+	rol.l #8,d4				;Palette into top byte
+	move.w d4,$3C0002		;PPPPPPPP NNNNAAVH Palette Tile, 
+								;Autoanimate Flip
+	moveM.l (sp)+,d0-d7
 	rts
