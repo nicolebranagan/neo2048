@@ -18,6 +18,8 @@ Grid:
 	align 4
 NewGrid:
 	dx.b 32
+RandSeed:
+	dx.b 1
 
 STATE_DEMO equ 0
 STATE_TITLE equ 1
@@ -271,6 +273,7 @@ cmds_UPDATE_TABLE:
 	dc.l	DemoUpdate, TitleUpdate, GameUpdate
 
 DemoUpdate:
+	addi.b #1,RandSeed
 DrawCredit:
 	lea MessageRaw,a0
 	lea Message,a1
@@ -515,7 +518,7 @@ GameInit:
 	move.l d0,Grid+4
 	move.l d0,Grid+8
 	move.l d0,Grid+12
-	jsr InitRound
+	jsr SpawnRandom
 
 	rts
 
@@ -525,11 +528,31 @@ GameUpdate:
 	jsr HandleInput
 	rts
 
-InitRound:
-	moveq #1,d0
-	move.b d0,Grid
-	moveq #1,d0
-	move.b d0,(Grid+2)
+SpawnRandom:
+	clr.l d0 ; grid walk offset
+	jsr getRandom ; puts random in d7
+	and.b #%00001111,d7
+	movea.l #(Grid),a0
+
+.checkNext:
+	move.b (0,a0,d0),d1
+	bne .goToNext
+
+	cmpi.b #0,d7
+	beq .spawnBlock
+
+	subi.b #1,d7
+
+.goToNext:
+	add.b #1,d0
+	cmpi.b #16,d0
+	bne .checkNext
+	clr d0
+	bra .checkNext
+
+.spawnBlock:
+	move.b #1,(0,a0,d0)
+
 	rts
 
 HandleInput:
@@ -684,6 +707,8 @@ StepGrid:
 	cmpi #0,d2
 	bne StepGrid
 
+	jsr SpawnRandom
+
 	rts
 
 ; d0 delta-x
@@ -765,5 +790,21 @@ CanStepGrid:
 
 	move.l #0,d2
 	rts
+
+RandomGarbage:
+	dc.b 092, 230, 008, 149, 132, 161, 125, 129, 031, 249, 060, 045, 160, 035, 247, 145, 242, 237, 147, 017, 189, 244, 137, 078, 230, 023, 140, 066, 084, 044, 107, 140, 250, 241, 058, 008, 018, 069, 172, 163, 166, 152, 196, 110, 085, 160, 173, 240, 084, 077, 229, 193, 179, 000, 161, 084, 226, 247, 110, 021, 115, 012, 020, 180, 033, 160, 191, 192, 018, 210, 097, 119, 089, 244, 082, 221, 191, 063, 057, 011, 195, 197, 048, 202, 223, 168, 035, 096, 013, 138, 121, 170, 138, 068, 247, 107, 218, 219, 225, 228, 012, 175, 098, 165, 063, 246, 045, 162, 101, 105, 101, 137, 071, 061, 186, 083, 201, 085, 213, 025, 112, 182, 247, 042, 033, 059, 221, 090, 044, 138, 230, 156, 136, 070, 119, 212, 096, 134, 159, 230, 207, 135, 247, 019, 232, 157, 205, 133, 250, 112, 129, 040, 018, 100, 046, 188, 193, 089, 141, 040, 031, 149, 023, 018, 015, 254, 106, 172, 197, 141, 238, 209, 134, 255, 184, 080, 175, 206, 175, 136, 249, 095, 237, 053, 251, 125, 103, 137, 240, 006, 209, 126, 187, 228, 188, 107, 040, 063, 002, 214, 117, 241, 099, 138, 017, 059, 112, 233, 163, 182, 168, 131, 078, 140, 226, 231, 052, 231, 234, 184, 057, 170, 111, 004, 009, 095, 029, 210, 092, 113, 006, 250, 120, 156, 070, 058, 248, 161, 231, 133, 205, 062, 002, 158, 130, 093, 039, 230, 196, 140, 255, 114, 033, 173, 048, 097
+
+getRandom:
+	clr d7
+	move.b RandSeed,d7
+	
+	move.l a0,-(sp)
+
+	movea.l #(RandomGarbage),a0
+	adda.l d7,a0
+	move.b (a0),d7
+
+	move.l (sp)+,a0
+	addi.b #1,RandSeed
 
 	rts
