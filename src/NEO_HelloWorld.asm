@@ -569,7 +569,7 @@ SpawnRandom:
 	moveq #96,d1 ; calculate xpos
 	clr d6
 	move.b d7,d6
-	and.b #3,d6 ; mask and then multiply by 32
+	and.w #3,d6 ; mask and then multiply by 32
 	lsl.w #5,d6
 	add.l d6,d1
 
@@ -577,6 +577,7 @@ SpawnRandom:
 	clr d6
 	move.b d7,d6
 	lsr.w #2,d6 ; divide by 4, multiply by 32
+	and.l #$0000FFFF,d6 ; mask
 	lsl.w #5,d6
 	sub.l d6,d2
 
@@ -607,6 +608,7 @@ SpawnRandom:
 	jsr SetSprite
 	move.w #61,d0
 	jsr SetSprite
+	jsr drawSprite
 
 	rts
 
