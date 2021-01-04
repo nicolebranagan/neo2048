@@ -712,8 +712,19 @@ StepGrid:
 	cmpi.b #0,(a0)
 	beq .freeMove
 
-	move.b Message,d7
+	cmp.b (a0),d4
+	bne .dontMergeAndComplete
 
+	; Combine pieces
+	movea.l #(Grid),a0
+	adda.l d7,a0
+	addq.l #1,d4
+	move.b d4,(a0)
+
+	bra .nextX
+
+.dontMergeAndComplete
+	move.b Message,d7
 .completeMove
 	movea.l #(Grid),a0
 	adda.l d7,a0
