@@ -556,7 +556,33 @@ SpawnRandom:
 
 .spawnBlock:
 	move.b #1,(0,a0,d0)
+	
+	move.l d0,d7
+	moveq #50,d0
 
+	moveq #94,d1 ; calculate xpos
+	clr d6
+	move.b d7,d6
+	and.b #3,d6 ; mask and then multiply by 32
+	lsl.w #5,d6
+	add.l d6,d1
+
+	move #468,d2 ; calculate ypos
+	clr d6
+	move.b d7,d6
+	lsr.w #2,d6 ; divide by 4, multiply by 32
+	lsl.w #5,d6
+	sub.l d6,d2
+
+	move.l #$2008,d3  ; Pattern
+	move.l #$10,d4		;Palette
+
+	jsr setSprite
+	addq.l #1,d0			; second row, which should be sticky but eh
+	add.l #16,d1
+	addq.l #2,d3
+	jsr SetSprite
+	
 	rts
 
 HandleInput:
@@ -611,10 +637,12 @@ StepGrid:
 	clr.l d3
 
 	; clear the working grid
-	move.l d2,NewGrid
-	move.l d2,NewGrid+4
-	move.l d2,NewGrid+8
-	move.l d2,NewGrid+12
+	movea.l #(Grid),a0
+	movea.l #(NewGrid),a1
+	move.l (a0)+,(a1)+
+	move.l (a0)+,(a1)+
+	move.l (a0)+,(a1)+
+	move.l (a0)+,(a1)+
 
 	; Move the deltas into place
 	move.b #1,dyX
@@ -766,13 +794,23 @@ StepGrid:
 
 .done
 
-	;movea.l #(NewGrid),a0
-	;movea.l #(Grid),a1
-	;move.l (a0)+,(a1)+
-	;move.l (a0)+,(a1)+
-	;move.l (a0)+,(a1)+
-	;move.l (a0)+,(a1)+
+	move.l Grid,d7
+	cmp.l NewGrid,d7
+	bne .hasChanges
+	move.l Grid+4,d7
+	cmp.l (NewGrid+4),d7
+	bne .hasChanges
+	move.l Grid+8,d7
+	cmp.l (NewGrid+8),d7
+	bne .hasChanges
+	move.l Grid+12,d7
+	cmp.l (NewGrid+12),d7
+	bne .hasChanges
 
+.hasNoChanges
+	rts
+
+.hasChanges
 	jsr SpawnRandom
 
 	rts
