@@ -20,6 +20,10 @@ NewGrid:
 	dx.b 32
 RandSeed:
 	dx.b 1
+dyX:
+	dx.b 1
+dyY:
+	dx.b 1
 
 STATE_DEMO equ 0
 STATE_TITLE equ 1
@@ -612,6 +616,21 @@ StepGrid:
 	move.l d2,NewGrid+8
 	move.l d2,NewGrid+12
 
+	; Move the deltas into place
+	move.b #1,dyX
+	move.b #1,dyY
+
+	cmpi.b #-1,d0
+	bne .ascendX
+	move.b #-1,dyX
+	move.l #3,d2
+.ascendX
+	cmpi.b #1,d1
+	bne .ascendY
+	move.b #-1,dyY
+	move.l #3,d3
+.ascendY
+
 .xloop
 	; load tile at d2, d3 on grid
 	move d3,d4
@@ -686,15 +705,30 @@ StepGrid:
 	bra .nextX
 
 .nextX
-	addq.l #1,d2
-	cmpi.l #4,d2
-	bne .xloop
+	add.b dyX,d2
+	cmpi.b #4,d2
+	beq .nextY
+	cmpi.b #-1,d2
+	beq .nextY
+	bra .xloop
 
+.nextY
 	; reset, increment y
 	clr.l d2
-	addq.l #1,d3
-	cmpi.l #4,d3
-	bne .xloop
+
+	cmpi.b #-1,d0
+	bne .ascendX2
+	move.b #3,d2
+.ascendX2
+	add.b dyY,d3
+
+	cmpi.b #4,d3
+	beq .done
+	cmpi.b #-1,d3
+	beq .done
+	bra .xloop
+
+.done
 
 	movea.l #(NewGrid),a0
 	movea.l #(Grid),a1
