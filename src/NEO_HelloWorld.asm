@@ -620,7 +620,7 @@ StepGrid:
 	move.b #1,dyX
 	move.b #1,dyY
 
-	cmpi.b #-1,d0
+	cmpi.b #1,d0
 	bne .ascendX
 	move.b #-1,dyX
 	move.l #3,d2
@@ -682,11 +682,6 @@ StepGrid:
 	addq.l #1,d4
 	move.b d4,(a0)
 
-	; Remove partner from grid so to avoid overlap
-	movea.l #(Grid),a0
-	adda.l d7,a0
-	move.b #0,(a0)
-
 	bra .nextX
 
 .freeMove
@@ -716,7 +711,7 @@ StepGrid:
 	; reset, increment y
 	clr.l d2
 
-	cmpi.b #-1,d0
+	cmpi.b #1,d0
 	bne .ascendX2
 	move.b #3,d2
 .ascendX2
