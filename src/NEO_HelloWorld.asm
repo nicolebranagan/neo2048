@@ -664,16 +664,16 @@ StepGrid:
 	cmpi.b #4,d6
 	beq .dontMove
 
-	; Get spot on new grid, put in d5
+	; Get spot on new grid
 	move d6,d7
 	lsl #2,d7
 	add d5,d7
 	movea.l #(Grid),a0
 	adda.l d7,a0
-	move.b (a0),d5
+	cmpi.b #0,(a0)
 	beq .freeMove
 
-	cmp.b d4,d5
+	cmp.b (a0),d4
 	bne .dontMove
 
 	; Combine pieces
@@ -685,6 +685,35 @@ StepGrid:
 	bra .nextX
 
 .freeMove
+	add.b d0,d5
+	add.b d1,d6
+
+	; bounds check
+	cmpi.b #-1,d5
+	beq .completeMove
+
+	cmpi.b #4,d5
+	beq .completeMove
+
+	cmpi.b #-1,d6
+	beq .completeMove
+
+	cmpi.b #4,d6
+	beq .completeMove
+
+	move.b d7,Message ; Using the message as a dummy variable
+
+	move d6,d7
+	lsl #2,d7
+	add d5,d7
+	movea.l #(Grid),a0
+	adda.l d7,a0
+	cmpi.b #0,(a0)
+	beq .freeMove
+
+	move.b Message,d7
+
+.completeMove
 	movea.l #(NewGrid),a0
 	adda.l d7,a0
 	move.b d4,(a0)
@@ -731,10 +760,6 @@ StepGrid:
 	move.l (a0)+,(a1)+
 	move.l (a0)+,(a1)+
 	move.l (a0)+,(a1)+
-
-	jsr CanStepGrid
-	cmpi #0,d2
-	bne StepGrid
 
 	jsr SpawnRandom
 
