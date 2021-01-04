@@ -401,8 +401,9 @@ SpritePalette:
 	even
 
 drawSprite:
-	clr d5
+	clr d7
 	movea.l #(Grid),a0
+	move.l #$0FFF,d5 ; shrinking
 	
 	moveq #10,d0 ;Hard Sprite Number (10)
 	move.l #500,d2		;Ypos
@@ -417,11 +418,10 @@ drawSprite:
 	sub.l #$20,d2		;Ypos
 
 .dontResetY:
-	move.b (a0)+,d5
-
+	move.b (a0)+,d7
 	
 	move.l #$2000,d3	;Pattern Num
-	move.l d5,d6
+	move.l d7,d6
 	lsl #2,d6					; multiply tile by 4
 	add.l d6,d3				; add to 2000
 
@@ -446,7 +446,7 @@ SetSprite:
 	add.l #$8000,d7			;Sprite Settings start at $8000+Sprnum
 	
 	move.w d7,$3C0000 		
-	move.w #$0FFF,$3C0002	;----HHHH VVVVVVVV - Shrink
+	move.w d5,$3C0002	;----HHHH VVVVVVVV - Shrink
 	
 	add.l #$200,d7			;Ypos at $8200+Sprnum
 	move.w d7,$3C0000 		
@@ -522,17 +522,23 @@ GameInit:
 	move.l d0,Grid+4
 	move.l d0,Grid+8
 	move.l d0,Grid+12
-	jsr SpawnRandom
-
 	rts
 
 GameUpdate:
+	move.l Grid,d0
+	add.l (Grid+4),d0
+	add.l (Grid+8),d0
+	add.l (Grid+12),d0
+	bne .skipInit
+	jsr SpawnRandom
+.skipInit
 	jsr drawSprite
 	jsr DrawCredit
 	jsr HandleInput
 	rts
 
 SpawnRandom:
+	jsr drawSprite
 	clr.l d0 ; grid walk offset
 	jsr getRandom ; puts random in d7
 	and.b #%00001111,d7
@@ -558,9 +564,9 @@ SpawnRandom:
 	move.b #1,(0,a0,d0)
 	
 	move.l d0,d7
-	moveq #50,d0
+	moveq #60,d0
 
-	moveq #94,d1 ; calculate xpos
+	moveq #96,d1 ; calculate xpos
 	clr d6
 	move.b d7,d6
 	and.b #3,d6 ; mask and then multiply by 32
@@ -574,15 +580,34 @@ SpawnRandom:
 	lsl.w #5,d6
 	sub.l d6,d2
 
-	move.l #$2008,d3  ; Pattern
+	move.l #$2004,d3  ; Pattern
 	move.l #$10,d4		;Palette
 
-	jsr setSprite
-	addq.l #1,d0			; second row, which should be sticky but eh
+	move.w #$01FF,d5
+.spriteLoop
+	jsr SetSprite
+	addq.l #1,d0			; second column
 	add.l #16,d1
 	addq.l #2,d3
+
 	jsr SetSprite
-	
+
+	subq.l #1,d0
+	sub.l #16,d1
+	subq.l #2,d3
+
+	jsr waitVBlank
+	add.w #$100,d5
+	cmp.w #$0FFF,d5
+	bls .spriteLoop
+
+	move.w #0,d2
+	move.w #0,d1
+	move.w #60,d0
+	jsr SetSprite
+	move.w #61,d0
+	jsr SetSprite
+
 	rts
 
 HandleInput:
