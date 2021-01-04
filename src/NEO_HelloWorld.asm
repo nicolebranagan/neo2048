@@ -642,6 +642,7 @@ StepGrid:
 	; put current value in d4
 	move.b (a0),d4
 	beq .nextX
+	move.b #0,(a0)
 
 	; do work on x
 	; d5, d6 working x-y
@@ -677,7 +678,7 @@ StepGrid:
 	bne .dontMove
 
 	; Combine pieces
-	movea.l #(NewGrid),a0
+	movea.l #(Grid),a0
 	adda.l d7,a0
 	addq.l #1,d4
 	move.b d4,(a0)
@@ -714,7 +715,7 @@ StepGrid:
 	move.b Message,d7
 
 .completeMove
-	movea.l #(NewGrid),a0
+	movea.l #(Grid),a0
 	adda.l d7,a0
 	move.b d4,(a0)
 	bra .nextX
@@ -723,7 +724,7 @@ StepGrid:
 	move d3,d7
 	lsl #2,d7
 	add d2,d7
-	movea.l #(NewGrid),a0
+	movea.l #(Grid),a0
 	adda.l d7,a0
 	move.b d4,(a0)
 	bra .nextX
@@ -754,12 +755,12 @@ StepGrid:
 
 .done
 
-	movea.l #(NewGrid),a0
-	movea.l #(Grid),a1
-	move.l (a0)+,(a1)+
-	move.l (a0)+,(a1)+
-	move.l (a0)+,(a1)+
-	move.l (a0)+,(a1)+
+	;movea.l #(NewGrid),a0
+	;movea.l #(Grid),a1
+	;move.l (a0)+,(a1)+
+	;move.l (a0)+,(a1)+
+	;move.l (a0)+,(a1)+
+	;move.l (a0)+,(a1)+
 
 	jsr SpawnRandom
 
