@@ -21,9 +21,9 @@
 
 <softwarelist name="neogeo" description="SNK Neo-Geo cartridges">
 	<software name="TestGame">
-		<description>www.chibiakumas.com Test Game</description>
-		<year>2019</year>
-		<publisher>chibiakumas.com</publisher>
+		<description>Neo 2048</description>
+		<year>2021</year>
+		<publisher>Nicole Express</publisher>
 		<sharedfeat name="release" value="MVS,AES" />
 		<sharedfeat name="compatibility" value="MVS,AES" />
 		<part name="cart" interface="neo_cart">

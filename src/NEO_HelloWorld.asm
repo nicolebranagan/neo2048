@@ -112,7 +112,7 @@ STATE_GAME equ 2
 ;							Cart Header
 	dc.b "NEO-GEO"
 	dc.b $00 			;System Version (0=cart; 1/2 are used for CD games)
-	dc.w $0FFF 			;NGH number ($0000 is prohibited)
+	dc.w $2048 			;NGH number ($0000 is prohibited)
 	dc.l $00080000 		;game prog size in bytes (4Mbits/512KB)
 	dc.l $00108000 		;pointer to backup RAM block (first two bytes are debug dips)
 	dc.w $0000 			;game save size in bytes
@@ -155,16 +155,14 @@ TRAP_CODE:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; 				Software Dip Switches (a.k.a. "soft dip")
 softDips_All:
-	dc.b "EXAMPLE SET A   " 		; Game Name
+	dc.b "NEO 2048        "			; Game Name
 	dc.w $FFFF 						; Special Option 1
 	dc.w $FFFF 						; Special Option 2
-	dc.b $FF 						; Special Option 3
+	dc.b 30 						; Special Option 3
 	dc.b $FF 						; Special Option 4
-	dc.b $02 						; Option 1: 2 choices, default #0
+	dc.b $00 						; Option 1: 2 choices, default #0
 	dc.b $00,$00,$00,$00,$00,$00,$00,$00,$00 ; filler
-	dc.b "OPTION 1A   " 			; Option 1 description
-	dc.b "CHOICE1 A   " 			; Option choices
-	dc.b "CHOICE2 A   "
+	dc.b "STEP TIMER  " 			; Option 1 description
 
 	
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
