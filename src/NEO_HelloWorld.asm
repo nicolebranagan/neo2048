@@ -14,10 +14,13 @@ SpriteNum:
 	dx.b 1
 	align 4
 Grid:
-	dx.b 32
+	dx.b 16
 	align 4
 NewGrid:
-	dx.b 32
+	dx.b 16
+	align 4
+RestrictGrid:
+	dx.b 16
 RandSeed:
 	dx.b 1
 dyX:
@@ -663,6 +666,11 @@ StepGrid:
 	clr.l d2
 	clr.l d3
 
+	move.l d2,RestrictGrid
+	move.l d2,RestrictGrid+4
+	move.l d2,RestrictGrid+8
+	move.l d2,RestrictGrid+12
+
 	; clear the working grid
 	movea.l #(Grid),a0
 	movea.l #(NewGrid),a1
@@ -732,11 +740,17 @@ StepGrid:
 	cmp.b (a0),d4
 	bne .dontMove
 
+	movea.l #(RestrictGrid),a1
+	adda.l d7,a1
+	cmpi.b #0,(a1)
+	bne .dontMove
+
 	; Combine pieces
 	movea.l #(Grid),a0
 	adda.l d7,a0
 	addq.l #1,d4
 	move.b d4,(a0)
+	move.b #1,(a1)
 
 	bra .nextX
 
@@ -770,11 +784,17 @@ StepGrid:
 	cmp.b (a0),d4
 	bne .dontMergeAndComplete
 
+	movea.l #(RestrictGrid),a1
+	adda.l d7,a1
+	cmpi.b #0,(a1)
+	bne .dontMergeAndComplete
+
 	; Combine pieces
 	movea.l #(Grid),a0
 	adda.l d7,a0
 	addq.l #1,d4
 	move.b d4,(a0)
+	move.b #1,(a1)
 
 	bra .nextX
 
