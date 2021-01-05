@@ -21,6 +21,9 @@ NewGrid:
 	align 4
 RestrictGrid:
 	dx.b 16
+score:
+	even
+	dx.w 1
 RandSeed:
 	dx.b 1
 dyX:
@@ -279,6 +282,7 @@ cmds_UPDATE_TABLE:
 
 DemoUpdate:
 	addi.b #1,RandSeed
+	jsr drawScore
 DrawCredit:
 	lea MessageRaw,a0
 	lea Message,a1
@@ -531,11 +535,15 @@ GameUpdate:
 	add.l (Grid+8),d0
 	add.l (Grid+12),d0
 	bne .skipInit
+
 	jsr SpawnRandom
+	move.w #0,score
+
 .skipInit
 	jsr drawSprite
 	jsr DrawCredit
 	jsr HandleInput
+	jsr drawScore
 	rts
 
 SpawnRandom:
@@ -750,6 +758,10 @@ StepGrid:
 	move.b d4,(a0)
 	move.b #1,(a1)
 
+	move.w #1,d7
+	lsl.w d4,d7
+	add.w d7,score
+
 	bra .nextX
 
 .freeMove
@@ -793,6 +805,10 @@ StepGrid:
 	addq.l #1,d4
 	move.b d4,(a0)
 	move.b #1,(a1)
+
+	move.w #1,d7
+	lsl.w d4,d7
+	add.w d7,score
 
 	bra .nextX
 
@@ -955,5 +971,46 @@ getRandom:
 
 	move.l (sp)+,a0
 	addi.b #1,RandSeed
+
+	rts
+
+drawScore:
+	clr d0
+
+	move.w score,d0
+	divu #10000,d0
+	addi.b #$30,d0
+	move.b d0,Message
+
+	swap d0
+	and.l #$0000FFFF,d0
+	divu #1000,d0
+	addi.b #$30,d0
+	move.b d0,Message+1
+
+	swap d0
+	and.l #$0000FFFF,d0
+	divu #100,d0
+	addi.b #$30,d0
+	move.b d0,Message+2
+
+	swap d0
+	and.l #$0000FFFF,d0
+	divu #10,d0
+	addi.b #$30,d0
+	move.b d0,Message+3
+
+	swap d0
+	and.l #$0000FFFF,d0
+	addi.b #$30,d0
+	move.b d0,Message+4
+
+	move.b #$30,Message+5
+	move.b #255,Message+6
+
+	move.b #17,Cursor_X
+	move.b #2,Cursor_Y
+	lea Message,a3
+	jsr PrintString			;Show String Message
 
 	rts
