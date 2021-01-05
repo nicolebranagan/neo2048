@@ -46,6 +46,9 @@
 				<rom loadflag="load16_byte" name="Sprites.c1" offset="0x100000" size="%size%" crc="%crc%" sha1="%sha%" />
 				<rom loadflag="load16_byte" name="Sprites.c2" offset="0x100001" size="%size%" crc="%crc%" sha1="%sha%" />
 			</dataarea>
+			<dataarea name="ymsnd" size="0x200000">
+				<rom name="202-v1.v1" offset="0x000000" size="%size%" crc="%crc%" sha1="%sha%" />
+			</dataarea>
 		</part>
 	</software>
 </softwarelist>

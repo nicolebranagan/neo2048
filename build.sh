@@ -27,6 +27,7 @@ mkdir ./build/rom/Neo2048
 cp ./bin/* ./build/rom/Neo2048
 cp ./build/cart.p ./build/rom/Neo2048/202-p1.p1
 cp ./build/m1.m1 ./build/rom/Neo2048/202-m1.m1
+cp ./build/202-v1.v1 ./build/rom/Neo2048/202-v1.v1
 cp ./neogeo.zip ./build/rom/
 
 MakeNeoGeoHash.exe "./xml/neogeo.xml" "./build/rom/neogeo.xml" "./build/rom/Neo2048"
