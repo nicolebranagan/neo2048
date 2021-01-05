@@ -20,7 +20,7 @@
 -->
 
 <softwarelist name="neogeo" description="SNK Neo-Geo cartridges">
-	<software name="TestGame">
+	<software name="Neo2048">
 		<description>Neo 2048</description>
 		<year>2021</year>
 		<publisher>Nicole Express</publisher>
