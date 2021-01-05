@@ -34,6 +34,7 @@ dyY:
 STATE_DEMO equ 0
 STATE_TITLE equ 1
 STATE_GAME equ 2
+STATE_GAMEOVER equ 3
 
 	code
 ; This Header is based on the work from 
@@ -278,7 +279,7 @@ inf:
 	jmp inf
 
 cmds_UPDATE_TABLE:
-	dc.l	DemoUpdate, TitleUpdate, GameUpdate
+	dc.l	DemoUpdate, TitleUpdate, GameUpdate, GameOverUpdate
 
 DemoUpdate:
 	addi.b #1,RandSeed
@@ -501,6 +502,8 @@ GameInit:
 	move.b d0,gameState
 	move.b #2,d0
 	move.b d0,$10FDAF ; BIOS_USER_MODE
+	move.b #1,d0
+	move.b d0,$10FDB6 ; BIOS_PLAYER_MOD1
 
 	; Put sprite palette real
 	move.l #$400200,a0
@@ -618,6 +621,8 @@ SpawnRandom:
 	move.w #61,d0
 	jsr SetSprite
 	jsr drawSprite
+
+	jsr CheckForGameOver
 
 	rts
 
@@ -1013,4 +1018,62 @@ drawScore:
 	lea Message,a3
 	jsr PrintString			;Show String Message
 
+	rts
+
+CheckForGameOver:
+	move.l #1,d0
+	move.l #0,d1
+	move.l #(Grid),a0
+
+	jsr CanStepGrid
+	bne .2048Loop
+
+	move.l #-1,d0
+	move.l #0,d1
+
+	jsr CanStepGrid
+	bne .2048Loop
+
+	move.l #0,d0
+	move.l #-1,d1
+
+	jsr CanStepGrid
+	bne .2048Loop
+
+	move.l #0,d0
+	move.l #1,d1
+
+	jsr CanStepGrid
+	beq .GameOver
+
+.2048Loop:
+	cmpi.b #11,(a0)
+	beq .GameOver
+	adda.l #1,a0
+	cmpa.l #(Grid+16),a0
+	bne .2048Loop
+
+.NoGameOver:
+	rts
+
+.GameOver:
+	move.b #(STATE_GAMEOVER),d0
+	move.b d0,gameState
+	move.b #1,d0
+	move.b d0,$10FDAF ; BIOS_USER_MODE
+	move.b #1,d0
+	move.b d0,$10FDB6 ; BIOS_PLAYER_MOD1
+
+	move.b #$01,(Cursor_Y)
+	move.b #$0F,(Cursor_X)
+
+	lea GameOverRaw,a3
+	jsr PrintString			;Show String Message
+	rts
+
+GameOverRaw:			 dc.b 'GAME  OVER',255
+	even
+
+GameOverUpdate:
+	jsr DemoUpdate
 	rts
