@@ -71,7 +71,7 @@ j_IRQ:
 
 ;==============================================================================;
 ; This section identifies the driver name, version, and author.
-	ascii "Dummy Z80 sound driver v20151229 | freem"
+	ascii "Nicole Express Garbage Sound Driver v0"
 
 ;==============================================================================;
 	org $0066
@@ -420,3 +420,4 @@ command_03:
 
 ;==============================================================================;
 	include "z80ram.inc"
+	include "adpcm.inc"

@@ -5,6 +5,15 @@ do
   python3 ./tools/neofy/neofy.py sprite $f ./bin/Sprites ./src_68k/palettes/$(basename $f .terra).pal
 done
 
+mkdir ./build/adpcma
+
+for f in ./samples/*.wav;
+do
+  adpcma $f ./build/adpcma/$(basename $f .wav).pcm
+done
+
+python3 ./tools/vrom/vrom.py ./build/202-v1.v1 ./src_z80/adpcm.inc ./build/adpcma/*.pcm
+
 vasmm68k_mot_win32.exe ./src_68k/neo2048.asm -chklabels -nocase -Fvobj -m68000 -align -L ./build/Listing.txt -o "./build/cart.obj"
 vlink -s -b rawbin1 -M -T "./memmap.ld" -t -o "./build/cart.p" "./build/cart.obj"
 romwak /f ./build/cart.p
