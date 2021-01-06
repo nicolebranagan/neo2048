@@ -8,6 +8,20 @@
 ;==============================================================================;
 	org $0000
 
+;ADPCM-A reg defines
+PA_CTRL	EQU $00
+PA_MVOL	EQU $01
+PA_CVOL	EQU $08
+PA_STARTL	EQU $10
+PA_STARTH	EQU $18
+PA_ENDL	EQU $20
+PA_ENDH	EQU $28
+
+;playback parameters
+CHMASK equ $01
+MVOL equ $3F
+CVOL equ $C0+$1F
+
 ; Start ($0000)
 ; Z80 program entry point.
 
@@ -90,6 +104,8 @@ NMI:
 	; Check for Neo-Geo specific commands that must be handled.
 	cp   1  ; command 1: Slot Switch
 	jp   Z,command01_Setup
+	cp   2  ; command 2: Beautiful Music
+	jp   Z,command02_Setup
 	cp   3  ; command 3: Soft Reset
 	jp   Z,command03_Setup
 	; Check for command $00 (do nothing)
@@ -389,6 +405,44 @@ command_01:
 	ld   a,1
 	out  (0xC),a ; Write 1 to port 0xC (Reply to 68K)
 	jp   0xFFFD ; jump to infinite loop in RAM
+
+;==============================================================================;
+; command02_Setup
+; Handles the setup for calling command $02.
+
+command02_Setup:
+	xor  a
+	out  (0xC),a
+	out  (0),a
+	ld   sp,0xFFFC
+
+	; set up Command $01's address on the stack
+	ld   hl,command_02
+	push hl
+	retn
+	; execution continues at command_02
+
+;==============================================================================;
+; command_02
+; Game music.
+
+command_02:
+	rst 8
+	ld	de,PA_MVOL<<8 +MVOL		;master volume
+	call write67
+	ld	de,PA_CVOL<<8 +CVOL		;left/right/channel volume
+	call write67
+	ld	de,PA_STARTL<<8	+(<NEOGEO_START_ADDR)	;start address low
+	call write67
+	ld	de,PA_STARTH<<8 +(>NEOGEO_START_ADDR)	;start address high
+	call write67
+	ld	de,PA_ENDL<<8 +(<NEOGEO_END_ADDR)	;end address low
+	call write67
+	ld	de,PA_ENDH<<8 +(>NEOGEO_END_ADDR)	;end address high
+	call write67
+	ld	de,PA_CTRL<<8 +CHMASK		;play this channel
+	call write67
+	jp   MainLoop
 
 ;==============================================================================;
 ; command03_Setup

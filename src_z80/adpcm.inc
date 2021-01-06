@@ -2,5 +2,5 @@
 
 ; ./build/adpcma/neogeo.pcm
 NEOGEO_START_ADDR equ 0 
-NEOGEO_END_ADDR equ 68096 
+NEOGEO_END_ADDR equ 204 
 

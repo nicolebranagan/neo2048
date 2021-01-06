@@ -51,8 +51,8 @@ with open(headerfile, "w") as header:
     for filedata in parsed_files:
         header.write(f'; {filedata["name"]}\n')
         variable_name = get_file_name(filedata["name"])
-        header.write(f'{variable_name}_START_ADDR equ {address} \n')
-        header.write(f'{variable_name}_END_ADDR equ {address + filedata["size"]} \n\n')
+        header.write(f'{variable_name}_START_ADDR equ {address//256} \n')
+        header.write(f'{variable_name}_END_ADDR equ {(address + filedata["size"])//256} \n\n')
         fulldata = fulldata + filedata["data"]
         address = address + len(filedata["data"])
 
