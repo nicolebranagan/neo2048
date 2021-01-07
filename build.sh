@@ -12,7 +12,7 @@ do
   adpcma $f ./build/adpcma/$(basename $f .wav).pcm
 done
 
-python3 ./tools/vrom/vrom.py ./build/202-v1.v1 ./src_z80/adpcm.inc ./build/adpcma/*.pcm
+python3 ./tools/vrom/vrom.py ./build/adpcma.v1 ./src_z80/adpcm.inc ./build/adpcma/*.pcm
 
 vasmm68k_mot_win32.exe ./src_68k/neo2048.asm -chklabels -nocase -Fvobj -m68000 -align -L ./build/Listing.txt -o "./build/cart.obj"
 vlink -s -b rawbin1 -M -T "./memmap.ld" -t -o "./build/cart.p" "./build/cart.obj"
@@ -24,9 +24,9 @@ romwak /p build/m1.m1 build/m1.m1 64 0
 mkdir ./build/rom
 mkdir ./build/rom/Neo2048
 
-cp ./build/cart.p ./build/rom/Neo2048/202-p1.p1
-cp ./build/m1.m1 ./build/rom/Neo2048/202-m1.m1
-cp ./build/202-v1.v1 ./build/rom/Neo2048/202-v1.v1
+cp ./build/cart.p ./build/rom/Neo2048/Neo2048.p1
+cp ./build/m1.m1 ./build/rom/Neo2048/SoundDriver.m1
+cp ./build/adpcma.v1 ./build/rom/Neo2048/adpcma.v1
 cp ./bin/* ./build/rom/Neo2048
 cp ./neogeo.zip ./build/rom/
 

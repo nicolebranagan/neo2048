@@ -29,25 +29,25 @@
 		<part name="cart" interface="neo_cart">
 			<!-- 68000 binary Program Code -->
 			<dataarea name="maincpu" width="16" endianness="big" size="0x100000">
-				<rom loadflag="load16_word_swap" name="202-p1.p1" offset="0x000000" size="%size%" crc="%crc%" sha1="%sha%" />
+				<rom loadflag="load16_word_swap" name="Neo2048.p1" offset="0x000000" size="%size%" crc="%crc%" sha1="%sha%" />
 			</dataarea>
 			<!-- FIX layer tiles -->
 			<dataarea name="fixed" size="0x040000">
-				<rom offset="0x000000" size="%size%" name="202-s1.s1" crc="%crc%" sha1="%sha%"  />
+				<rom offset="0x000000" size="%size%" name="FixLayer.s1" crc="%crc%" sha1="%sha%"  />
 			</dataarea>
 			<!-- Z80 binary program code (sound CPU) -->
 			<dataarea name="audiocpu" size="0x020000">
-				<rom offset="0x000000" size="%size%" name="202-m1.m1" crc="%crc%" sha1="%sha%" />  
+				<rom offset="0x000000" size="%size%" name="SoundDriver.m1" crc="%crc%" sha1="%sha%" />  
 			</dataarea>
 			<!-- Sprite Pattern Data -->
 			<dataarea name="sprites" size="0x400000">
-				<rom loadflag="load16_byte" name="202-c1.c1" offset="0x000000" size="%size%" crc="%crc%" sha1="%sha%" />
-				<rom loadflag="load16_byte" name="202-c2.c2" offset="0x000001" size="%size%" crc="%crc%" sha1="%sha%" />
+				<rom loadflag="load16_byte" name="Logo.c1" offset="0x000000" size="%size%" crc="%crc%" sha1="%sha%" />
+				<rom loadflag="load16_byte" name="Logo.c2" offset="0x000001" size="%size%" crc="%crc%" sha1="%sha%" />
 				<rom loadflag="load16_byte" name="Sprites.c1" offset="0x100000" size="%size%" crc="%crc%" sha1="%sha%" />
 				<rom loadflag="load16_byte" name="Sprites.c2" offset="0x100001" size="%size%" crc="%crc%" sha1="%sha%" />
 			</dataarea>
 			<dataarea name="ymsnd" size="0x100000">
-				<rom name="202-v1.v1" offset="0x000000" size="%size%" crc="%crc%" sha1="%sha%" />
+				<rom name="adpcma.v1" offset="0x000000" size="%size%" crc="%crc%" sha1="%sha%" />
 			</dataarea>
 		</part>
 	</software>
