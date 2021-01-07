@@ -24,6 +24,8 @@ RestrictGrid:
 score:
 	even
 	dx.w 1
+highScore:
+	dx.w 1
 RandSeed:
 	dx.b 1
 dyX:
@@ -212,10 +214,13 @@ userReq_StartupInit:
 	
 PLAYER_START:					;Player pressed start on title
 	move.b	d0,$300001;REG_DIPSW		; kick the watchdog
+	move.l 	#%010000,$10FDB0	; BIOS_CREDIT_DEC
+	jsr $C00456 ; CREDIT_DOWN
 	jsr GameInit
 	rts
 	
-COIN_SOUND:					
+COIN_SOUND:				
+	move.b #$04,$320000 ; REG_SOUND
 DEMO_END:						
 	rts
 
@@ -254,6 +259,7 @@ TitleRaw:			 dc.b 'NEO 2048',255
 userReq_TitleDisplay:
 	move.b #(STATE_TITLE),d0
 	move.b d0,gameState
+	jsr COIN_SOUND
 
 	jmp userReq_Active
 
@@ -1059,10 +1065,6 @@ CheckForGameOver:
 .GameOver:
 	move.b #(STATE_GAMEOVER),d0
 	move.b d0,gameState
-	move.b #1,d0
-	move.b d0,$10FDAF ; BIOS_USER_MODE
-	move.b #1,d0
-	move.b d0,$10FDB6 ; BIOS_PLAYER_MOD1
 
 	move.b #$01,(Cursor_Y)
 	move.b #$0F,(Cursor_X)
@@ -1075,5 +1077,14 @@ GameOverRaw:			 dc.b 'GAME  OVER',255
 	even
 
 GameOverUpdate:
+	cmpi.b #0,$10FD97 ; is any key pressed
+	beq .noKeysPressed
+
+	move.b #1,d0
+	move.b d0,$10FDAF ; BIOS_USER_MODE
+	move.b #1,d0
+	move.b d0,$10FDB6 ; BIOS_PLAYER_MOD1
+	
+.noKeysPressed:
 	jsr DemoUpdate
 	rts

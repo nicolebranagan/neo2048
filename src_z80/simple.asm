@@ -108,6 +108,8 @@ NMI:
 	jp   Z,command02_Setup
 	cp   3  ; command 3: Soft Reset
 	jp   Z,command03_Setup
+	cp   4  ; command 4: Coin drop
+	jp   Z,command04_Setup
 	; Check for command $00 (do nothing)
 	or   a
 	jp   Z,.NMI_end
@@ -471,6 +473,45 @@ command_03:
 	out  (0),a
 	ld   sp,0xFFFF
 	jp   Start
+
+;==============================================================================;
+; command04_Setup
+; Handles the setup for calling command $02.
+
+command04_Setup:
+	xor  a
+	out  (0xC),a
+	out  (0),a
+	ld   sp,0xFFFC
+
+	; set up Command $01's address on the stack
+	ld   hl,command_04
+	push hl
+	retn
+	; execution continues at command_02
+
+;==============================================================================;
+; command_04
+; Game music.
+
+command_04:
+	rst 8
+	ld	de,PA_MVOL<<8 +MVOL		;master volume
+	call write67
+	ld	de,PA_CVOL<<8 +CVOL		;left/right/channel volume
+	call write67
+	ld	de,PA_STARTL<<8	+(<MEOW_START_ADDR)	;start address low
+	call write67
+	ld	de,PA_STARTH<<8 +(>MEOW_START_ADDR)	;start address high
+	call write67
+	ld	de,PA_ENDL<<8 +(<MEOW_END_ADDR)	;end address low
+	call write67
+	ld	de,PA_ENDH<<8 +(>MEOW_END_ADDR)	;end address high
+	call write67
+	ld	de,PA_CTRL<<8 +CHMASK		;play this channel
+	call write67
+	jp   MainLoop
+
 
 ;==============================================================================;
 	include "z80ram.inc"
